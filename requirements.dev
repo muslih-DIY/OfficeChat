@@ -1,0 +1,7 @@
+bcrypt
+fastapi
+passlib
+python-multipart
+uvicorn
+gunicorn
+python-jose[cryptography
