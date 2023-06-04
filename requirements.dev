@@ -4,4 +4,4 @@ passlib
 python-multipart
 uvicorn
 gunicorn
-python-jose[cryptography
+python-jose[cryptography]
