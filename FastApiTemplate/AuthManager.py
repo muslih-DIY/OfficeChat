@@ -20,9 +20,9 @@ ACCESS_TOKEN_EXPIRE_MINUTES = 10
 
 class KeyType(Enum):
     SESSION = 3
-    ACCESS = 4
-
-
+    REFRESH = 4
+    ACCESS = 5
+    
 
 class AuthData(BaseModel):
     username: str | None = None
@@ -38,12 +38,20 @@ class Tokendb(Token):
     username:str
     session:str # token from cookies/refresh token
 
-class SCookies(BaseModel):
-    cookies:str
+class RefreshToken(BaseModel):
+    refresh_token: str
+    token_type: str
     expiry:float
 
-class SCookiesDB(SCookies):
+class Refreshdb(Token):
     username:str
+
+class SessionToken(BaseModel):
+    session:str
+    expiry:float
+
+class SessionTokenDB(SessionToken):
+    user:str
 
 class User(BaseModel):
     username: str
@@ -99,28 +107,28 @@ class LoginManager(ABC):
 
 
     @abstractmethod
-    def get_cookies(user:str):
-        'return cooies details against a user'
+    def get_session(self,user:str):
+        'return session details against a user'
 
     @abstractmethod
-    def get_token(user:str):
+    def get_token(self,user:str):
         'return token against the user'
 
     @abstractmethod
-    def save_cookies(cookies:SCookiesDB):
+    def save_session(self,cookies:SessionTokenDB):
         pass
 
     @abstractmethod
-    def save_token(cookies:Tokendb):
+    def save_token(self,cookies:Tokendb):
         pass
 
     @abstractmethod
-    def get_token_against_cookie(cookies:str):
+    def get_token_against_session(self,session:str):
         'return token against a cookie' 
         pass
 
     @abstractmethod
-    def invalidate_cookie(cookies:str):
+    def invalidate_cookie(self,cookies:str):
         """
         remove cookie from storage and invalidate a session
         remove all the token against the cookies
@@ -144,7 +152,8 @@ class LoginManager(ABC):
             "type":KeyType.ACCESS.value,
             "scopes": scopes
             }
-        return self.generate_token(data,expires_min)
+        token,expiry = self.generate_token(data,expires_min)
+        return Token(access_token=token,expiry=expiry.timestamp(),token_type='Bearer')
     
     def create_session_token(self,user,scopes, expires_min: int = None):
         data={
@@ -152,7 +161,8 @@ class LoginManager(ABC):
             "type":KeyType.SESSION.value,
             "scopes": scopes
             }
-        return self.generate_token(data,expires_min)
+        token,expiry = self.generate_token(data,expires_min)
+        return SessionTokenDB(session=token, expiry=expiry.timestamp(),user=user.username)
     
     def generate_token(self,data,expires_min: int = None):
 

@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from starlette.middleware.cors import CORSMiddleware
 from FastApiTemplate.views import index
 from FastApiTemplate.apis import heartbeat
-from FastApiTemplate.core import Auth2
+from FastApiTemplate.core import Auth2,config
 # from app.core import auth
 # from app.routes import views
 
@@ -19,4 +19,5 @@ app = FastAPI()
 
 app.include_router(index.router)
 app.include_router(heartbeat.router)
+app.include_router(config.router)
 # app.include_router(Auth2.app)
