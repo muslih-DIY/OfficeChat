@@ -4,19 +4,15 @@ from datetime import timedelta,datetime
 from fastapi.security import HTTPBearer,HTTPAuthorizationCredentials 
 from fastapi.exceptions import HTTPException
 from starlette.status import HTTP_401_UNAUTHORIZED, HTTP_403_FORBIDDEN,HTTP_307_TEMPORARY_REDIRECT
-from fastapi import Request,Depends,APIRouter,Header
-from fastapi.responses import HTMLResponse,Response
+from fastapi import Request,Depends
+from fastapi.responses import Response
 from abc import ABC,abstractmethod
 from enum import Enum
-
 from jose import JWTError, jwt
 from passlib.context import CryptContext
 from pydantic import BaseModel, ValidationError
 
-SECRET_KEY = "09d25e094faa6ca2556c818166b7a9563b93f7099f6f0f4caa6cf63b88e8d3e7"
-ALGORITHM = "HS256"
-SESSION_EXPIRE_MINUTES = 15
-ACCESS_TOKEN_EXPIRE_MINUTES = 10
+
 
 class KeyType(Enum):
     SESSION = 3
@@ -65,7 +61,7 @@ class UserInDB(User):
 
 
 
-router = APIRouter()
+
 
 autherization = HTTPBearer(auto_error=False)
 
@@ -79,13 +75,27 @@ class LoginManager(ABC):
           -  The saving of cookies (may be in redis/database/dictionary/in-memmorycache ) in `save_cookies`
 
     """
-    def __init__(self, tokenUrl: str, scheme_name: str | None = None, scopes: Dict[str, str] | None = None, description: str | None = None, auto_error: bool = True):
+
+    def __init__(
+            self, 
+            tokenUrl: str,
+            secret:str,
+            algorithm:str,
+            session_expiration:int=60,
+            access_token_expiry:int=10,
+            login_page:str = '/login'
+            ):
         
+        self.SECRET_KEY = secret
+        self.ALGORITHM = algorithm
+        self.SESSION_EXPIRE_MINUTES = session_expiration
+        self.ACCESS_TOKEN_EXPIRE_MINUTES = access_token_expiry
+
         self.pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
-        self.login_page = '/login'
-        self.session_cookey = 'Authkey'
-
+        self.login_page = login_page
+        self.session_cookey = 'session-auths'
+        self.access_cookey = 'access-auths'
 
     def verify_password(self,plain_password, hashed_password):
         return self.pwd_context.verify(plain_password, hashed_password)
@@ -167,17 +177,17 @@ class LoginManager(ABC):
     def generate_token(self,data,expires_min: int = None):
 
         expires_delta = timedelta(
-            minutes=expires_min or ACCESS_TOKEN_EXPIRE_MINUTES
+            minutes=expires_min or self.ACCESS_TOKEN_EXPIRE_MINUTES
             )
         to_encode = data.copy()
         if expires_delta:
             expire = datetime.utcnow() + expires_delta
         to_encode.update({"exp": expire,"rand":random.randrange(10,50)})
-        encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+        encoded_jwt = jwt.encode(to_encode, str(self.SECRET_KEY), algorithm=self.ALGORITHM)
         return encoded_jwt,expire
     
     def decode_jwt(self,token):
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        payload = jwt.decode(token, str(self.SECRET_KEY), algorithms=[self.ALGORITHM])
         username: str = payload.get("sub")
         scops: str = payload.get("scopes")
         type = payload.get("type")
@@ -188,7 +198,6 @@ class LoginManager(ABC):
             self,
             Authkey:HTTPAuthorizationCredentials =Depends(autherization)
             ):
-        print(Authkey)
         if Authkey is not None:
             try:
 
@@ -201,7 +210,7 @@ class LoginManager(ABC):
                     detail="token expired",
                     headers={"WWW-Authenticate": "Bearer"},
                         )
-            print(ttype)            
+          
             if ttype and ttype==KeyType.ACCESS.value:              
                 if username:
                     user = self.get_user(username)
@@ -216,7 +225,8 @@ class LoginManager(ABC):
 
     async def get_user_from_cookie(
             self,
-            request: Request
+            request: Request,
+            redirect_back=True
             ) -> Optional[dict]:
         Authkey = request.cookies.get(self.session_cookey)
         if Authkey is not None:
@@ -236,7 +246,7 @@ class LoginManager(ABC):
                 if username:
                     user = self.get_user(username)
                     if user and not user.disabled:
-                        return user
+                        return user              
         raise HTTPException(
             status_code=HTTP_307_TEMPORARY_REDIRECT,
             headers={'Location': self.login_page},
