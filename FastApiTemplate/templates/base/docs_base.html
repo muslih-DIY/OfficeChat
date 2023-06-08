@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{title}}</title>
+    <style>
+        body{
+            background-color: rgb(216, 216, 209);
+            color: rgb(7, 4, 4);
+            margin-left: 20px;
+            padding-left: 10px;
+        }
+        #sidepage {
+            height: 100%;
+            width: 200px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            overflow-x: hidden;
+            background-color: rgb(132, 136, 141);
+            }
+        #sidepage #sidebar{
+            width:100%;
+            height: 50px;
+            padding-left: 15px;
+            background-color: rgb(80, 125, 136);
+            color: white;
+            padding-top: 20px;
+            margin-bottom: 20px;
+            font-size: x-large;
+        }
+        #sidepage a{
+            padding: 8px 8px 8px 32px;
+            text-decoration: none;
+            font-size: large;
+            color: #fffbfb;
+            display: block;
+        }
+        #sidepage a:hover {
+             color: #061064;
+             background-color: #5e5858;
+            }
+        #centerpage{
+            margin-left:250px;
+            }        
+        red { color: red }
+        yellow { color: yellow }
+        green { color: green}
+        blue { color: blue}
+        blockquote {
+            
+            background-color: rgb(144, 150, 137);
+            color: rgb(0, 0, 0);
+            padding: 2px;
+            padding-left: 10px;
+  
+        }
+        code {
+                padding-left: 10px;
+            }
+    </style>
+</head>
+<body>
+    <div id="sidepage">
+        <div id="sidebar">
+            {{title}}
+        </div>
+        
+       <a href="index">{{title}}</a>
+        
+    </div>
+
+    <div id="centerpage">
+        {{ docs|safe }}
+    </div>
+   
+</body>
+</html>
