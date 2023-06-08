@@ -1,4 +1,4 @@
-# FastapiWithAccount
-![](fastapipythn.jpg)
+# OfficeChat
+![](icon-1.png)
 
-This is a Template repository for FastApi Applications
+This application will help the office mate to communicate in the different topics.
