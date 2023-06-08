@@ -5,3 +5,5 @@ python-multipart
 uvicorn
 gunicorn
 python-jose[cryptography]
+Markdown
+jinja2

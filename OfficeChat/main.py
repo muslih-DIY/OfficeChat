@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from starlette.middleware.cors import CORSMiddleware
+
 from OfficeChat.views import index
 from OfficeChat.core import Auth2,config
 
@@ -14,6 +15,7 @@ app = FastAPI()
 #     allow_methods=["*"],
 #     allow_headers=["*"],
 # )
+
 
 app.include_router(index.router)
 app.include_router(config.router)
