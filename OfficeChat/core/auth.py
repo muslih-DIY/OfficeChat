@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 from typing import Annotated
 
-from fastapi import Depends,Request,APIRouter
+from fastapi import Depends,Request,APIRouter,Cookie,WebSocket
 from fastapi.responses import RedirectResponse,HTMLResponse
 from fastapi.security import OAuth2PasswordRequestForm
 from fastapi import HTTPException
@@ -67,13 +67,34 @@ def get_user_from_db_id(session:Session,userid:int):
 async def get_user_from_session(
         request:Request,
         session = Depends(get_db_Session),
+        cookies: str | None = Cookie(default=None,alias=COOKIE_NAME)
         )->User:
-    cookies = request.cookies.get(COOKIE_NAME)
-    print(cookies)
+    # cookies = request.cookies.get(COOKIE_NAME)
     if cookies:
         try:
             username = decode_token(cookies)
-            print(username)
+            
+            userdb = get_user_from_db(session,username)
+            if  userdb.is_active:
+                return User(**userdb.dict())            
+        except JWTError :
+            # raise
+
+            raise HTTPException(status_code=307,headers={'location':'/login'})        
+    
+
+    raise HTTPException(status_code=307,headers={'location':'/login'})
+
+async def get_wb_user_from_session(
+        websocket:WebSocket,
+        session = Depends(get_db_Session),
+        cookies: str | None = Cookie(default=None,alias=COOKIE_NAME)
+        )->User:
+    # cookies = request.cookies.get(COOKIE_NAME)
+    if cookies:
+        try:
+            username = decode_token(cookies)
+            
             userdb = get_user_from_db(session,username)
             if  userdb.is_active:
                 return User(**userdb.dict())            
@@ -105,7 +126,6 @@ async def register(
 async def registerpage(
      request:Request 
      ):
-    
      context = {'request':request}           
      return config.templates.TemplateResponse('Register.html',context)
 

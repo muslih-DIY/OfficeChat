@@ -1,81 +1,78 @@
-from fastapi import FastAPI,APIRouter, WebSocket, WebSocketDisconnect
+from typing import List,Dict
+from fastapi import FastAPI,APIRouter, WebSocket, WebSocketDisconnect,Depends
 from fastapi.responses import HTMLResponse
+from websockets.exceptions import ConnectionClosed,ConnectionClosedError
+from model.user import User
+from core.auth import get_user_from_session,get_wb_user_from_session
+from chats.textmessage import store_msg,TextMsg
+from apis.textmessage import SendTextMsg
+from depends.database import Session,engine
 
 router = APIRouter()
 
-html = """
-<!DOCTYPE html>
-<html>
-    <head>
-        <title>Chat</title>
-    </head>
-    <body>
-        <h1>WebSocket Chat</h1>
-        <h2>Your ID: <span id="ws-id"></span></h2>
-        <form action="" onsubmit="sendMessage(event)">
-            <input type="text" id="messageText" autocomplete="off"/>
-            <button>Send</button>
-        </form>
-        <ul id='messages'>
-        </ul>
-        <script>
-            var client_id = Date.now()
-            document.querySelector("#ws-id").textContent = client_id;
-            var ws = new WebSocket(`ws://127.0.0.1:8000/ws/${client_id}`);
-            ws.onmessage = function(event) {
-                var messages = document.getElementById('messages')
-                var message = document.createElement('li')
-                var content = document.createTextNode(event.data)
-                message.appendChild(content)
-                messages.appendChild(message)
-            };
-            function sendMessage(event) {
-                var input = document.getElementById("messageText")
-                ws.send(input.value)
-                input.value = ''
-                event.preventDefault()
-            }
-        </script>
-    </body>
-</html>
-"""
 
 
-class ConnectionManager:
+
+class ChatManager:
     def __init__(self):
-        self.active_connections: list[WebSocket] = []
+        self.active_connections: List[WebSocket] = []
+        self.users_live_socket: Dict[str ,List[WebSocket]] = {}
 
-    async def connect(self, websocket: WebSocket):
+    async def connect(self, websocket: WebSocket,user:str):
         await websocket.accept()
         self.active_connections.append(websocket)
 
-    def disconnect(self, websocket: WebSocket):
-        self.active_connections.remove(websocket)
+        if user not in self.users_live_socket:
+            self.users_live_socket[user] = []
+        self.users_live_socket[user].append(websocket)
 
-    async def send_personal_message(self, message: str, websocket: WebSocket):
-        await websocket.send_text(message)
+    def disconnect(self, websocket: WebSocket,user:str):
+        self.active_connections.remove(websocket)
+        self.users_live_socket[user].remove(websocket)
+
+    async def process_chat(self,msg):
+        users = [msg.from_]
+        if not msg.from_==msg.to:
+            users.append(msg.to)
+
+        with Session(engine) as session:
+            message:TextMsg = store_msg(session=session,msg=msg)
+
+        message.at = message.at.timestamp()
+        for user in users:
+            await self.send_personal_message(message.dict(),user)
+        
+
+
+    async def send_personal_message(self, message: dict,user:str):
+        websockets:List[WebSocket] = self.users_live_socket.get(user,[])
+        for socket in websockets:
+            try:
+                await socket.send_json(message)
+
+            except ConnectionClosedError:
+                self.disconnect(socket,user)
 
     async def broadcast(self, message: str):
         for connection in self.active_connections:
             await connection.send_text(message)
 
 
-manager = ConnectionManager()
+manager = ChatManager()
 
 
-@router.get("/chat")
-async def get():
-    return HTMLResponse(html)
 
-
-@router.websocket("/ws/{client_id}")
-async def websocket_endpoint(websocket: WebSocket, client_id: int):
-    await manager.connect(websocket)
+@router.websocket("/chats/")
+async def websocket_endpoint(
+    websocket: WebSocket,
+    user:User=Depends(get_wb_user_from_session)
+    ):
+    await manager.connect(websocket,user.name)
     try:
         while True:
-            data = await websocket.receive_text()
-            await manager.send_personal_message(f"You wrote: {data}", websocket)
-            await manager.broadcast(f"Client #{client_id} says: {data}")
+            data = await websocket.receive_json(mode='text')
+            await manager.process_chat(SendTextMsg(**data))
+            # await manager.send_personal_message(f"You wrote: {data}", websocket)
+            # await manager.broadcast(f"Client #{user} says: {data}")
     except WebSocketDisconnect:
-        manager.disconnect(websocket)
-        await manager.broadcast(f"Client #{client_id} left the chat")
+        manager.disconnect(websocket,user.name)

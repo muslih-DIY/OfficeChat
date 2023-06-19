@@ -6,7 +6,10 @@ from views import index
 from core import auth
 from core import config
 from views import socket
+from apis import textmessage
 from depends.database import create_all_table
+
+
 
 app = FastAPI()
 
@@ -24,7 +27,8 @@ routes = (
     index.router,
     docs.router,
     auth.router,
-    socket.router
+    socket.router,
+    textmessage.router
 )
 for route in routes:
     app.include_router(route)
