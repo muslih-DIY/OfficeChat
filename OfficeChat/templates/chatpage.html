@@ -10,6 +10,7 @@
         
 
     <body>
+        <a href="/logout">Logout</a>
         <h2><span id="ws-id">{{user}}</span></h2>
 
 
@@ -27,6 +28,8 @@
                 var message = document.createElement('li')
                 // var content = document.createTextNode(event.data)
                 let data = JSON.parse(event.data)
+
+                /// data preparation
                 var div = document.createElement('div');
                 var from_head = document.createTextNode(data.from_);
                 var msg = document.createTextNode(data.content);
