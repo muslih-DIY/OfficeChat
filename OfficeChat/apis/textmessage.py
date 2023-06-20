@@ -36,7 +36,7 @@ async def chatpage(
      user:User=Depends(get_user_from_session) 
      ):
      context = {'request':request,'user':user.name}           
-     return config.templates.TemplateResponse('chatpage.html',context)
+     return config.templates.TemplateResponse('newchatpage.html',context)
 
 
 
