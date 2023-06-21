@@ -80,10 +80,10 @@ async def get_user_from_session(
         except JWTError :
             # raise
 
-            raise HTTPException(status_code=307,headers={'location':'/login'})        
+            raise HTTPException(status_code=302,headers={'location':'/login'})        
     
 
-    raise HTTPException(status_code=307,headers={'location':'/login'})
+    raise HTTPException(status_code=302,headers={'location':'/login'})
 
 async def get_wb_user_from_session(
         websocket:WebSocket,
@@ -162,10 +162,15 @@ async def loginAuth(
 
     return response
 
-@router.post('/logout',response_class=RedirectResponse)
-async def logout(self):
+@router.get('/logout',response_class=RedirectResponse)
+async def logout(
+    user:User=Depends(get_user_from_session)
+    ):
     response = RedirectResponse('/login',status_code=302)
-    response.delete_cookie(COOKIE_NAME)
+    response.delete_cookie(COOKIE_NAME,httponly=True)
+    response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+    response.headers["Pragma"] = "no-cache"
+    response.headers["Expires"] = "0"
     return response
         
 

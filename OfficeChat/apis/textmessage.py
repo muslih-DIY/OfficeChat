@@ -36,7 +36,11 @@ async def chatpage(
      user:User=Depends(get_user_from_session) 
      ):
      context = {'request':request,'user':user.name}           
-     return config.templates.TemplateResponse('chatpage.html',context)
+     response =  config.templates.TemplateResponse('chatpage.html',context)
+     response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+     response.headers["Pragma"] = "no-cache"
+     response.headers["Expires"] = "0"
+     return response
 
 
 
