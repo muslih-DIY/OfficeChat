@@ -146,11 +146,16 @@ async def loginAuth(
      session:Session = Depends(get_db_Session)       
      ):
     user = user_form
-    
-    userdb = authenticate_user(session,user.username,user.password)
-    print(userdb)
+    redirect = '/login'
+    try:
+
+        userdb = authenticate_user(session,user.username,user.password)
+    except sqlalchemy.exc.NoResultFound:
+        userdb = None
+        redirect='/register'
+
     if not userdb:
-        response = RedirectResponse('/login',status_code=302)
+        response = RedirectResponse(redirect,status_code=302)
         response.delete_cookie(COOKIE_NAME,httponly=True)
         return response
 
@@ -163,7 +168,7 @@ async def loginAuth(
     return response
 
 
-@router.get('/logout',response_class=RedirectResponse)
+@router.post('/logout',response_class=RedirectResponse)
 async def logout(
     user:User=Depends(get_user_from_session)
     ):
