@@ -69,7 +69,6 @@ async def get_user_from_session(
         session = Depends(get_db_Session),
         cookies: str | None = Cookie(default=None,alias=COOKIE_NAME)
         )->User:
-    # cookies = request.cookies.get(COOKIE_NAME)
     if cookies:
         try:
             username = decode_token(cookies)
@@ -78,9 +77,10 @@ async def get_user_from_session(
             if  userdb.is_active:
                 return User(**userdb.dict())            
         except JWTError :
-            # raise
-
             raise HTTPException(status_code=302 ,headers={'location':'/login'})        
+
+       
+
     
 
     raise HTTPException(status_code=302,headers={'location':'/login'})
@@ -162,12 +162,16 @@ async def loginAuth(
 
     return response
 
-@router.post('/logout',response_class=RedirectResponse)
+
+@router.get('/logout',response_class=RedirectResponse)
 async def logout(
-    user:User=Depends(get_user_from_session),
-                ):
+    user:User=Depends(get_user_from_session)
+    ):
     response = RedirectResponse('/login',status_code=302)
     response.delete_cookie(COOKIE_NAME,httponly=True)
+    response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+    response.headers["Pragma"] = "no-cache"
+    response.headers["Expires"] = "0"
     return response
         
 
