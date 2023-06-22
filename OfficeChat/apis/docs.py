@@ -2,7 +2,7 @@ from fastapi import APIRouter,Request,Depends
 from fastapi.responses import HTMLResponse
 from markdown import markdown
 from core import config
-from depends.Auths import AuthManager
+from core.auth import get_user_from_session
 
 templates = config.templates
 router = APIRouter()
@@ -10,7 +10,7 @@ router = APIRouter()
 @router.get("/documents/",tags=["index"])
 def docsindex(
    request:Request,
-   user=Depends(AuthManager.get_user_from_cookie)
+   user=Depends(get_user_from_session)
    ):
    try:
       with open(config.DOCS / 'index.md') as mdfile:
@@ -26,7 +26,7 @@ def docsindex(
 async def docs(
    request:Request,
    docfile:str='index',
-   user=Depends(AuthManager.get_user_from_cookie)
+   user=Depends(get_user_from_session)
    ):
    try:
        

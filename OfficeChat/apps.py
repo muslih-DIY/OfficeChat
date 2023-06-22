@@ -3,8 +3,13 @@ from starlette.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from apis import docs
 from views import index
-from depends import Auths
+from core import auth
 from core import config
+from views import socket
+from apis import textmessage
+from depends.database import create_all_table
+
+
 
 app = FastAPI()
 
@@ -21,8 +26,14 @@ app.mount("/static", StaticFiles(directory=config.ROOT / "static"), name="static
 routes = (
     index.router,
     docs.router,
-    Auths.router,
+    auth.router,
+    socket.router,
+    textmessage.router
 )
 for route in routes:
     app.include_router(route)
 
+
+@app.on_event('startup')
+async def start():
+    create_all_table()
