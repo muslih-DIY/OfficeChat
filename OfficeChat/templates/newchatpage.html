@@ -7,51 +7,68 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CHATZ</title>
     <link rel="stylesheet" href="/static/css/bootstrap.min.css">
+    <style>
+/* Hide scrollbar for Chrome, Safari and Opera */
+#messages::-webkit-scrollbar {
+    display: none;
+  }
+  
+  /* Hide scrollbar for IE, Edge and Firefox */
+  #messages {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+  }
+          
+  .scroll-up-icon {
+    position: fixed;
+    bottom: 300px;
+    right: 100px;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+    align-items: baseline;
+  }
+  
+  .scroll-up-icon.show {
+    opacity: 1;
+    visibility: visible;
+  }          
+          
+    </style>
     <script src="/static/scripts/readContacts.js" defer></script>
     <script src="/static/scripts/sentMessage.js" defer></script>
     <script src="/static/scripts/receiveMessage.js" defer></script>
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg bg-primary" style="height: 10vh;" data-bs-theme="dark">
-        <div class="container-fluid">
-            <a class="navbar-brand" href="#">OfficeChat</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarColor01"
-                aria-controls="navbarColor01" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <li class="nav-item">
-                <form method="post" action="/logout" class="form-inline">
-                    <button type="submit" class="ml-2 btn btn-danger">Logout</button>
-                </form>
-            </li>
-            <!--
-            <div class="collapse navbar-collapse" id="navbarColor01">
-                <ul class="navbar-nav me-auto">
-                    <li class="nav-item">
-                        <a class="nav-link active" href="#">Home
-                            <span class="visually-hidden">(current)</span>
-                        </a>
-                    </li>
+    <div class="container-fluid     " style="height: 100vh;max-height:100vh">
+        <nav class="navbar navbar-expand-lg bg-primary mt-2 p-1" style="height: 8%;" data-bs-theme="dark">
+            <div class="d-flex justify-content-between w-100 px-5">
+                <div>
+                    <img src="/static/icons/icon-1.png"   class="img-fluid rounded-circle img-circle">
+                    <a class="navbar-brand" href="#">OfficeChat</a>
                     
-                    <li class="nav-item">
-                        <a class="nav-link" href="#">Features</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#">Pricing</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#">About</a>
-                    </li>
+                </div>
+                
+                <div class="d-flex align-self-center">
+                    <div class="align-self-center me-5 text-white fs-2">
+                        <i class="text-success fs-1">*</i>
+                        {{user}} </div>
+                    <form method="post" action="/logout" class="form-inline">
+                        <button type="submit" class="ml-1 btn btn-danger">Logout</button>
+                    </form>
                     
-                </ul>
+                </div>
             </div>
-            -->
-        </div>
-    </nav>
+        </nav>
 
 
-    <template id="message-send">
-        <div style="border-radius: 5px; margin-bottom: 7px; padding: 5px; min-height: auto; width: 50%; float: left; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);"
+    <template id="message-receive">
+        <div style="border-radius: 5px; margin-bottom: 7px; padding: 
+        5px; min-height: auto; width: 50%; float: left; 
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        background-color:rgb(196, 157, 197);
+        color:white;
+        "
             class="d-flex flex-column">
             <div class="user fw-bold fs-4"></div>
             <div class="message"></div>
@@ -59,8 +76,13 @@
         </div>
     </template>
 
-    <template id="message-receive">
-        <div style="border-radius: 5px; margin-bottom: 7px; padding: 5px; min-height: auto; width: 50%; float: right; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);"
+    <template id="message-send">
+        <div style="border-radius: 5px; margin-bottom: 7px; padding: 5px; 
+         min-height: auto; width: 50%; float: right;
+         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+         background-color:rgb(104, 177, 230);
+         color:white;
+         "
             class="d-flex flex-column align-self-end">
             <div class="user fw-bold fs-4"></div>
             <div class="message"></div>
@@ -68,29 +90,51 @@
         </div>
     </template>
 
-    <h1>Welcome {{user}}</h1>
-
-    <div class="container-fluid">
-        <div class="row p-3" style="height: 90vh;">
-            <div class="col-3 border border-primary">
+    
+    <div class="row p-3" style="height:90%;">
+            <div class="col-3 border border-primary overflow-auto p-1"
+             style="max-height:100%;background-color:rgb(153, 158, 153);">
                 <h2>Contacts</h2>
-                <div class="list-group pb-2">
+                <div class="list-group pb-2 ">
+                    
                 </div>
             </div>
             <div class="col-9 border border-primary p-2 welcome">
                 <div class="card">
                     <h5 class="card-header">Welcome {{user}}</h5>
                     <div class="card-body">
-                        <h5 class="card-title">chat with your office collegues</h5>
+                        <pre><h5 class="card-title">
+                            chat with your office collegues. </h5>
+                    <p style="color: red;">
+                                   These Message will be stored and it is not encrypted</p>
+                        </pre>
                         <p class="card-text"></p>
                     </div>
                 </div>
             </div>
-            <div class="col-9 border border-primary d-flex flex-column d-none chat">
-                <div class="border border-primary p-3" id="to"></div>
-                <div id="messages" class="border border-primary p-3 flex-grow-1 d-flex flex-column"
-                    style="overflow-x: auto;"></div>
-                <div class="border border-primary p-3">
+            <div class="col-9 border border-primary d-flex flex-column d-none chat" style="max-height:100%">
+                <div class="border border-primary p-3 fs-3 fw-1 " id="to" 
+                style="text-align:right;
+                max-height:80%;
+                background-color:rgb(196, 157, 197);
+                "></div>
+                <div id="messages" 
+                style="
+                max-height:80%;
+                background-color:rgba(123, 192, 127, 0.336);
+                "
+                 class="border border-primary p-3 flex-grow-1 d-flex flex-column overflow-scroll">
+                </div>
+                <div id="scrollUpIcon" class="scroll-up-icon">
+    
+                    <i class="fw-1" style="font-size: 100px;">&#8595;</i>
+
+                  </div>
+                <div class="border border-primary p-3 "
+                style="
+                max-height:80%;
+                background-color:rgb(104, 177, 230);
+                ">
                     <div id="chatForm">
                         <div class="form-group row">
                             <div class="col-10">
