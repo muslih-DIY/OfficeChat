@@ -1,0 +1,86 @@
+<!DOCTYPE html>   
+<html>   
+<head>  
+<meta name="viewport" content="width=device-width, initial-scale=1">  
+<title> Login Page </title>  
+<style>   
+
+button {   
+       background-color: #4CAF50;   
+       width: 100%;  
+        color: orange;   
+        padding: 15px;   
+        margin: 10px 0px;   
+        border: none;   
+        cursor: pointer;   
+         }   
+ form {   
+        padding: 10px; 
+    }   
+ input[type=text], input[type=password] {   
+        width: 100%;   
+        margin: 8px 0;  
+        padding: 12px 20px;   
+        display: inline-block;   
+        border: 2px solid rgb(255, 255, 255); 
+        box-sizing: border-box;  
+        background-color: #c6e1eeba;  
+    }  
+    body{
+    margin: 0;
+    padding: 0;
+    padding-top: 100px;
+    background-color:#6abadeba;
+    font-family: 'Arial';
+    height: 100vh;
+}
+.login{
+        width: 382px;
+        overflow: hidden;
+        margin: auto;
+        
+        padding: 80px;
+        background: #23463f;
+        border-radius: 15px ;
+
+}
+</style>   
+</head>    
+<body> 
+    <div class="login">
+
+
+    <center> 
+        <h1> User Login Form </h1> 
+    </center>   
+                <form action="/auths" method="post">
+
+                <div class="container">
+                    <label for="uname"><b>Username</b></label>
+                    <input type="text" placeholder="Enter Username" name="username" required>
+
+                    <label for="psw"><b>Password</b></label>
+                    <input type="password" placeholder="Enter Password" name="password" required>
+
+                    <button type="submit">Login</button>
+                    <label>
+                </div>
+
+                </form>
+                <div>
+                    <a href="/register" style="text-decoration: none;color: thistle;margin: 5px;padding: 10px;"><span>New Registration</span> </a>   
+                </div>
+            </div> 
+
+            <script>
+                window.onbeforeunload  = function(event) {
+                    // Perform authorization check here
+                    // You may need to make an AJAX request to the server to validate the user's authentication status
+                    // If the user is not authorized, you can redirect them to a login page or display an error message
+                    console.log('back press identified');
+                    location.reload();
+                  };
+                </script>
+
+</body>     
+</html>  
