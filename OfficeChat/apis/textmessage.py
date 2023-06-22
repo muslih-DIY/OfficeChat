@@ -36,7 +36,7 @@ async def chatpage(
      user:User=Depends(get_user_from_session) 
      ):
      context = {'request':request,'user':user.name}           
-     response =  config.templates.TemplateResponse('chatpage.html',context)
+     response =  config.templates.TemplateResponse('newchatpage.html',context)
      response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
      response.headers["Pragma"] = "no-cache"
      response.headers["Expires"] = "0"
@@ -45,13 +45,14 @@ async def chatpage(
 
 
 
-@router.get('/users',response_model=list)
+
+@router.get('/users',response_class=JSONResponse)
 async def chatpage(
      request:Request,
      user:User=Depends(get_user_from_session),
      database:Session = Depends(get_db_Session), 
      ):          
-     return get_users(database)
+     return get_users(database,user.name)
 
 @router.get('/get_chat',response_model=list)
 async def chatpage(

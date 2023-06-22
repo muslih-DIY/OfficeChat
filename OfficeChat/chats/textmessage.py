@@ -33,9 +33,9 @@ def get_unread_chat(session:Session,user:str):
     return mesages
 
 
-def get_users(session:Session):
+def get_users(session:Session,user:str):
 
-    users = session.exec(select(Userdb.name)).all()
+    users = session.exec(select(Userdb.name).where(Userdb.name != user)).all()
 
     return users
 
