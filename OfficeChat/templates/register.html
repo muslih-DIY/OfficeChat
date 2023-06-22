@@ -66,6 +66,17 @@ button {
                 </div>
 
                 </form>
-            </div>                   
+            </div>               
+            
+            <script>
+                window.onbeforeunload  = function(event) {
+                    // Perform authorization check here
+                    // You may need to make an AJAX request to the server to validate the user's authentication status
+                    // If the user is not authorized, you can redirect them to a login page or display an error message
+                    console.log('back press identified');
+                    alert('hi');
+                    location.reload();
+                  };
+             </script>
 </body>     
 </html>  

@@ -41,13 +41,13 @@ async def chatpage(
 
 
 
-@router.get('/users',response_model=list)
+@router.get('/users',response_class=JSONResponse)
 async def chatpage(
      request:Request,
      user:User=Depends(get_user_from_session),
      database:Session = Depends(get_db_Session), 
      ):          
-     return get_users(database)
+     return get_users(database,user.name)
 
 @router.get('/get_chat',response_model=list)
 async def chatpage(
