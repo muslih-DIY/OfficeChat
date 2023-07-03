@@ -10,7 +10,7 @@ def store_msg(session:Session,msg):
     session.refresh(valid_msg)
     return valid_msg
 
-def get_chats_between(session:Session,person1:str,person2:str,group:str='individual',offsets:int=0,limits:int=40):
+def get_chats_between(session:Session,person1:str,person2:str,group:str='individual',offsets:int=0,limits:int=10):
 
     stmt = (
         select(TextMsg)
@@ -20,6 +20,7 @@ def get_chats_between(session:Session,person1:str,person2:str,group:str='individ
                 and_(TextMsg.from_==person2, TextMsg.to==person1)))
         .offset(offsets)
         .limit(limits)
+        .order_by(-TextMsg.id)
     )
             #, (TextMsg.from_==person2, TextMsg.to==person1)))
     
@@ -39,6 +40,6 @@ def get_users(session:Session,user:str):
 
     return users
 
-# with Session(engine) as session:
+with Session(engine) as session:
 
-#     print(get_unread_chat(session,'admin'))
+    print(get_chats_between(session,'admin','muslih'))
