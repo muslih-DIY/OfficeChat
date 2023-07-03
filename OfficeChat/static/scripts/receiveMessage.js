@@ -6,7 +6,7 @@ ws.onmessage = function (event) {
     // // var content = document.createTextNode(event.data)
     let data = JSON.parse(event.data);
     update_chat_box(data);
-   
+    console.log(data);
     if (client_id != data.from_) {
         let chatig_person = document.getElementById("notify-"+data.from_);
         let count = chatig_person.innerHTML;
@@ -15,14 +15,14 @@ ws.onmessage = function (event) {
             chatig_person.innerHTML='1';         
             return;                
         }
-        chatig_person.innerHTML = int(count)+1;
+        chatig_person.innerHTML = parseInt(count) +1;
             
     }
 
 };
 
 
-function update_chat_box(msg){
+function update_chat_box(msg,append_bottom=true){
     //Get and clone our template
 
     if(msg.from_==to.innerHTML || msg.to==to.innerHTML){
@@ -36,7 +36,15 @@ function update_chat_box(msg){
             // clone.querySelector('.user').innerText = msg.from_;
             clone.querySelector('.message').innerText = msg.content;
             clone.querySelector('.datetime').innerText = new Date(msg.at).toLocaleString();
-            messages.appendChild(clone);
+            if(append_bottom){ 
+                messages.appendChild(clone);
+            }
+            else{
+                console.log('insert before');
+                messages.insertBefore(clone, messages.firstChild);
+            }
+            
+
             messages.lastElementChild.scrollIntoView();
         }else{
             let template = document.getElementById('message-receive');
@@ -46,7 +54,13 @@ function update_chat_box(msg){
             clone.querySelector('.user').innerText = msg.from_;
             clone.querySelector('.message').innerText = msg.content;
             clone.querySelector('.datetime').innerText = new Date(msg.at).toLocaleString();
-            messages.appendChild(clone);
+            if(append_bottom){ 
+                messages.appendChild(clone);
+            }
+            else{
+                console.log('insert before');
+                messages.insertBefore(clone, messages.firstChild);
+            }
             
         }
         
