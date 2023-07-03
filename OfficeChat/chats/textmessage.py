@@ -40,6 +40,6 @@ def get_users(session:Session,user:str):
 
     return users
 
-with Session(engine) as session:
+# with Session(engine) as session:
 
-    print(get_chats_between(session,'admin','muslih'))
+#     print(get_chats_between(session,'admin','muslih'))
