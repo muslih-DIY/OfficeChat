@@ -18,7 +18,18 @@
     -ms-overflow-style: none;  /* IE and Edge */
     scrollbar-width: none;  /* Firefox */
   }
-          
+      
+  .i-circle {
+    display: inline-block;
+    border-radius: 50%;
+    font-size: 22px;
+    line-height: 100%; /* set to same size as width, height */
+    width: 10%;
+    height: 100%;
+    text-align: center;
+    vertical-align: middle;
+}
+
   .scroll-up-icon {
     position: fixed;
     bottom: 300px;
@@ -113,11 +124,21 @@
                 </div>
             </div>
             <div class="col-9 border border-primary d-flex flex-column d-none chat" style="max-height:100%">
-                <div class="border border-primary p-3 fs-3 fw-1 " id="to" 
-                style="text-align:right;
-                max-height:80%;
-                background-color:rgb(196, 157, 197);
-                "></div>
+                <div class="d-flex justify-content-between align-items-center py-1" style="max-height:80%;
+                    background-color:rgb(196, 157, 197);
+                    ">
+                    <div class='i-circle  bg-white text-black p-0 pt-3' id="to-icon" style="width: 5%;font-size:xx-large"></div>
+
+                    <div class="p-3 fw-1 " id="to" 
+                    style="text-align:right;
+                    max-height:80%;
+                    background-color:rgb(196, 157, 197);
+                    font-size:xx-large;
+                    font-weight:1000;
+
+                    "></div>
+                </div>
+
                 <div id="messages" 
                 style="
                 max-height:80%;
