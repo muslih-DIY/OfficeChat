@@ -6,7 +6,7 @@ ws.onmessage = function (event) {
     // // var content = document.createTextNode(event.data)
     let data = JSON.parse(event.data);
     update_chat_box(data);
-   
+    console.log(data);
     if (client_id != data.from_) {
         let chatig_person = document.getElementById("notify-"+data.from_);
         let count = chatig_person.innerHTML;
@@ -15,7 +15,7 @@ ws.onmessage = function (event) {
             chatig_person.innerHTML='1';         
             return;                
         }
-        chatig_person.innerHTML = int(count)+1;
+        chatig_person.innerHTML = parseInt(count) +1;
             
     }
 

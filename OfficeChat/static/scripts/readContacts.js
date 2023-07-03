@@ -6,9 +6,11 @@ const message = document.querySelector('#msg');
 const contacts = document.querySelector('.list-group');
 const to    = document.querySelector('.chat #to');
 const chat_box = document.querySelector('#messages');
+const messages = document.querySelector('#messages');
 const contacturl = '/users';
 const chatmessageurl = '/get_chat'
 var message_offset = 0;
+var message_available = true;
 
 var queryParams = (params)=>{
     return Object.keys(params).map(function(key) {
@@ -56,13 +58,33 @@ function hide() {
             if(to.innerText==event.target.getAttribute('data-contact')){
                 return;
             }
+            console.log(to);
+            console.log(event.target.getAttribute('data-contact'));
             chat_box.innerHTML = '';
             to.innerText = event.target.getAttribute('data-contact');
-            loadmessage(to.innerText);
-            messages.lastElementChild.scrollIntoView();
-            let chatig_person = document.getElementById("notify-"+to.innerText);
-            console.log();(chatig_person)
-            chatig_person.innerHTML='';
+            message_offset = 0;
+            message_available = true ;
+            fetch(chatmessageurl+'?'+queryParams({other_person:to.innerText,offset:0}))
+            .then((resp) =>{
+                if (!resp.ok) throw new Error('was not a valid response');
+                return resp.json();
+            })
+            .then((msgs) =>{
+                msgs.forEach(msg=>{
+                    update_chat_box(msg);
+                })
+            })
+            .then(() =>{
+
+                // messages.lastElementChild.scrollIntoView();
+                let chatig_person = document.getElementById("notify-"+to.innerText);
+                chatig_person.innerHTML='';
+                let allmessage = messages.querySelectorAll('#messages div.message');
+                let lastmessage = allmessage[allmessage.length- 1];
+                message_offset+=40;
+            })
+
+
 
         });
     })
@@ -71,6 +93,11 @@ function hide() {
 
 
 async function loadmessage(with_user,offset=0){
+    
+    // if message is not message_available not load
+    if(!message_available){
+        return;
+    }
 
     fetch(chatmessageurl+'?'+queryParams({other_person:with_user,offset:offset}))
     .then((resp) =>{
@@ -80,7 +107,13 @@ async function loadmessage(with_user,offset=0){
         msgs.forEach(msg=>{
             update_chat_box(msg);
         })
-        message_offset+=40;
+        if(msgs.length!=0){
+            message_offset+=40;
+            
+        }
+        else{
+            message_available = false;
+        }
        
             
     })
@@ -90,13 +123,13 @@ async function loadmessage(with_user,offset=0){
 
 
 chat_box.addEventListener('scroll', function() {
-    console.log(chat_box.scrollTop,chat_box.clientHeight,chat_box.scrollHeight);
+    // console.log(chat_box.scrollTop,chat_box.clientHeight,chat_box.scrollHeight);
     if ((chat_box.scrollHeight-chat_box.clientHeight) > chat_box.scrollTop+50) {
       scrollUpIcon.classList.add('show');
     } else {
       scrollUpIcon.classList.remove('show');
     }
-    if(chat_box.clientHeight>chat_box.scrollTop+10){
+    if(chat_box.scrollTop==0){
         loadmessage(to.innerText,message_offset);
     }
   });
