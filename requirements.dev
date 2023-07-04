@@ -7,5 +7,6 @@ gunicorn
 python-jose[cryptography]
 Markdown
 jinja2
-websockets
 sqlmodel
+websockets
+
