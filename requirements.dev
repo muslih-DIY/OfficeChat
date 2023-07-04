@@ -1,0 +1,11 @@
+bcrypt
+fastapi
+passlib
+python-multipart
+uvicorn
+gunicorn
+python-jose[cryptography]
+Markdown
+jinja2
+websockets
+sqlmodel
