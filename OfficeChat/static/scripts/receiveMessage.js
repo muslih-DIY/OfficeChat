@@ -34,7 +34,7 @@ ws.onmessage = function (event) {
         //Update our cloned template
         clone.querySelector('.user').innerText = data.from_;
         clone.querySelector('.message').innerText = data.content;
-        clone.querySelector('.datetime').innerText = data.at;
+        clone.querySelector('.datetime').innerText =  new Date(data.at).toLocaleTimeString();;
         messages.appendChild(clone);
     }
 

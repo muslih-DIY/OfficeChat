@@ -1,3 +1,4 @@
+from typing import List
 from fastapi import APIRouter,Request,Depends,HTTPException
 from fastapi.responses import JSONResponse,HTMLResponse
 from sqlmodel import Session,SQLModel,Field
@@ -6,7 +7,10 @@ from core.auth import get_user_from_session
 from core import config
 from model.user import User
 from depends.database import get_db_Session
-from chats.textmessage import store_msg,get_users,get_unread_chat,get_chats_between
+from chats.textmessage import(
+     store_msg,get_users,get_unread_chat,get_chats_between,
+     mark_read
+)
 
 router = APIRouter()
 
@@ -45,7 +49,6 @@ async def chatpage(
 
 
 
-
 @router.get('/users',response_class=JSONResponse)
 async def chatpage(
      request:Request,
@@ -64,10 +67,21 @@ async def chatpage(
      ):          
      return get_chats_between(database,user.name,other_person,offsets=offset)
 
-@router.get('/unread',response_model=list[TextMsg])
-async def chatpage(
+@router.get('/unread',response_model=list)
+async def chat_unread(
      request:Request,
      user:User=Depends(get_user_from_session),
      database:Session = Depends(get_db_Session), 
      ):          
      return get_unread_chat(database,user.name)
+
+@router.post('/update_read',response_class=JSONResponse)
+async def chat_update_read(
+     request:Request,
+     message_id:List[int],
+     user:User=Depends(get_user_from_session),
+     database:Session = Depends(get_db_Session), 
+     ):          
+     if mark_read(database,user.name,message_id):
+          return JSONResponse('OK')
+     

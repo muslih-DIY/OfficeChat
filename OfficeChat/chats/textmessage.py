@@ -1,4 +1,4 @@
-from sqlmodel import Session,select,or_,and_
+from sqlmodel import Session,select,or_,and_,func,update
 from model.textmesage import TextMsg
 from model.user import Userdb
 from depends.database import engine
@@ -21,17 +21,32 @@ def get_chats_between(session:Session,person1:str,person2:str,group:str='individ
         .offset(offsets)
         .limit(limits)
     )
-            #, (TextMsg.from_==person2, TextMsg.to==person1)))
-    
     mesages = session.exec(stmt).all()
 
     return mesages
 
 def get_unread_chat(session:Session,user:str):
-    stmt = select(TextMsg).where(TextMsg.to==user).where(TextMsg.read==False)
+    stmt = (
+        select(TextMsg.from_,func.count(TextMsg.id))
+        .where(TextMsg.to==user)
+        .where(TextMsg.read==False)
+        .group_by(TextMsg.from_)
+    )
     mesages = session.exec(stmt).all()
     return mesages
 
+def mark_read(session:Session,user:str,message_ids:list=None):
+    print(user,message_ids)
+    if not message_ids:message_ids=[]
+    stmt = (
+        update(TextMsg)
+        .where(TextMsg.id.in_(message_ids))
+        .where(TextMsg.to==user)
+        .values(read=True)
+    )
+    session.exec(stmt)
+    session.commit()
+    return True
 
 def get_users(session:Session,user:str):
 
@@ -41,4 +56,4 @@ def get_users(session:Session,user:str):
 
 # with Session(engine) as session:
 
-#     print(get_unread_chat(session,'admin'))
+#     print(mark_read(session,'test',[6,9]))
