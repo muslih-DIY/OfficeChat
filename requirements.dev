@@ -9,3 +9,6 @@ Markdown
 jinja2
 sqlmodel
 websockets
+authlib
+httpx
+itsdangerous

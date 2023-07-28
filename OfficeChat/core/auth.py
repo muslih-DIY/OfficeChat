@@ -9,16 +9,22 @@ from jose import JWTError, jwt
 from passlib.context import CryptContext
 import sqlalchemy
 from sqlmodel import Session,select
-from model.user import Userdb,User,UserRegisterForm
+from core.user import (
+    UserProfile,User,UserRegisterForm,
+    create_user,
+    get_user_from_db_id,
+    get_user_with_username)
 from depends.database import  get_db_Session
 from core import config
 
 SECRET_KEY = "09d25e094faa6ca2556c818166b7a9563b93f7099f6f0f4caa6cf63b88e8d3e7"
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
-COOKIE_NAME = "WrongUser"
+COOKIE_NAME = "authSession"
+
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
 
 def verify_password(plain_password, hashed_password):
     return pwd_context.verify(plain_password, hashed_password)
@@ -27,17 +33,15 @@ def verify_password(plain_password, hashed_password):
 def get_password_hash(password):
     return pwd_context.hash(password)
 
-def authenticate_user(session:Session, username: str, password: str)->Userdb:
+def authenticate_user(session:Session, username: str, password: str)->User:
     try:
-        user = get_user_from_db(session,username)
+        user = get_user_with_username(session,username)
     except sqlalchemy.exc.OperationalError as e:
-        print(e)
-        return None
-    if not user:
-        return False
-    if not verify_password(password, user.password):
-        return False
-    return user
+        return 
+    if user and user.password:
+        if verify_password(password, user.password):
+            return user
+        
 
 def create_access_token(username: int, expires_min: int = 60):
     expire = datetime.utcnow() + timedelta(minutes=expires_min or 60)
@@ -53,58 +57,64 @@ def decode_token(token):
     return username
  
 
-def get_user_from_db(session:Session,username:str):
-    
-    user  = session.exec(select(Userdb).where(Userdb.name==username)).one()
+async def get_user_from_session_cookie(
+        request:Request,
+        session = Depends(get_db_Session),
+        cookies: str | None = Cookie(default=None,alias=COOKIE_NAME)
+        )->UserProfile:
+    if cookies:
+        try:
+            user_id = decode_token(cookies)
+            
+            userdb = get_user_from_db_id(session,user_id)
+            if  userdb.is_active:
+                return UserProfile(**userdb.dict())            
+        except JWTError :
+            raise HTTPException(status_code=302 ,headers={'location':'/login'})        
+        
+    raise HTTPException(status_code=302,headers={'location':'/login'})
 
-    return user
-def get_user_from_db_id(session:Session,userid:int):
-    
-    user  = session.get(userid)
-
-    return user
 
 async def get_user_from_session(
         request:Request,
         session = Depends(get_db_Session),
-        cookies: str | None = Cookie(default=None,alias=COOKIE_NAME)
-        )->User:
-    if cookies:
-        try:
-            username = decode_token(cookies)
-            
-            userdb = get_user_from_db(session,username)
-            if  userdb.is_active:
-                return User(**userdb.dict())            
-        except JWTError :
-            raise HTTPException(status_code=302 ,headers={'location':'/login'})        
-
-       
-
+        )->UserProfile:
     
+    user_id = request.session.get('id')
 
+    if user_id:
+        try:
+
+            userdb = get_user_from_db_id(session,user_id)
+            if  userdb.is_active:
+                return UserProfile(**userdb.dict())
+                        
+        except Exception :
+            raise HTTPException(status_code=302 ,headers={'location':'/login'})        
+        
     raise HTTPException(status_code=302,headers={'location':'/login'})
 
-async def get_wb_user_from_session(
+async def get_user_from_session_for_wb(
         websocket:WebSocket,
         session = Depends(get_db_Session),
-        cookies: str | None = Cookie(default=None,alias=COOKIE_NAME)
-        )->User:
-    # cookies = request.cookies.get(COOKIE_NAME)
-    if cookies:
+        )->UserProfile:
+    user_id = websocket.session.get('id')
+
+    if user_id:
         try:
-            username = decode_token(cookies)
-            
-            userdb = get_user_from_db(session,username)
+
+            userdb = get_user_from_db_id(session,user_id)
+
             if  userdb.is_active:
-                return User(**userdb.dict())            
-        except JWTError :
-            # raise
+                return UserProfile(**userdb.dict())
+                        
+        except Exception :
+            raise HTTPException(status_code=302 ,headers={'location':'/login'})        
+        
+    raise HTTPException(status_code=302,headers={'location':'/login'})
 
-            raise HTTPException(status_code=307,headers={'location':'/login'})        
-    
 
-    raise HTTPException(status_code=307,headers={'location':'/login'})
+
     
 
 
@@ -118,7 +128,7 @@ async def register(
      ):
     
     newuser.password = get_password_hash(newuser.password)
-    session.add(Userdb(**{'password':newuser.password,'name':newuser.username}))
+    session.add(User(**{'password':newuser.password,'name':newuser.username}))
     session.commit()
     return RedirectResponse('/login',status_code=302)
 
@@ -128,6 +138,7 @@ async def registerpage(
      ):
      context = {'request':request}           
      return config.templates.TemplateResponse('Register.html',context)
+
 
 @router.get('/login')
 async def login(
@@ -170,10 +181,11 @@ async def loginAuth(
 
 @router.post('/logout',response_class=RedirectResponse)
 async def logout(
-    user:User=Depends(get_user_from_session)
+    request:Request,
+    user:UserProfile=Depends(get_user_from_session)
     ):
+    request.session.clear()
     response = RedirectResponse('/login',status_code=302)
-    response.delete_cookie(COOKIE_NAME,httponly=True)
     response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
     response.headers["Pragma"] = "no-cache"
     response.headers["Expires"] = "0"

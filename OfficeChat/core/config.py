@@ -12,6 +12,8 @@ ALLOWED_HOSTS = config('ALLOWED_HOSTS', cast=CommaSeparatedStrings)
 ALGORITHM=config('ALGORITHM', cast=str, default="HS256") 
 SESSION_EXPIRE_MINUTES=config('SESSION_EXPIRE_MINUTES', cast=int, default=60)  
 ACCESS_TOKEN_EXPIRE_MINUTES=config('ACCESS_TOKEN_EXPIRE_MINUTES', cast=int, default=10)
+GOOGLE_CLIENT_SECRET=config('GOOGLE_CLIENT_SECRET')
+GOOGLE_CLIENT_ID=config('GOOGLE_CLIENT_ID')
   
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 DOCS = ROOT / "docs"
