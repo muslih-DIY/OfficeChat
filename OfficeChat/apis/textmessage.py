@@ -1,3 +1,4 @@
+from typing import List
 from fastapi import APIRouter,Request,Depends,HTTPException
 from fastapi.responses import JSONResponse,HTMLResponse
 from sqlmodel import Session,SQLModel,Field,select
@@ -8,7 +9,10 @@ from core.config import TEMPLATE
 from core.user import UserProfile,User
 from model.chat import Message
 from depends.database import get_db_Session
-from chats.textmessage import store_msg,get_users,get_unread_chat,get_chats_between
+from chats.textmessage import(
+     store_msg,get_users,get_unread_chat,get_chats_between,
+     mark_read
+)
 
 router = APIRouter()
 
@@ -40,6 +44,7 @@ async def chatpage(
           response.headers["Pragma"] = "no-cache"
           response.headers["Expires"] = "0"
           return response
+
 
 
 @router.get('/me',response_class=JSONResponse)
@@ -92,4 +97,5 @@ async def chatpage(
      database:Session = Depends(get_db_Session), 
      ):          
      return get_chats_between(database,user.id,other_person,offsets=offset)
+
 
