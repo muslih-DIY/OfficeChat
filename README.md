@@ -1,6 +1,11 @@
 # OfficeChat
 ![](icon-1.png)
 
+
+## python version
+
+Python 3.10.7
+
 This application will help the office mate to communicate in the different topics.
 
 
