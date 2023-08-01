@@ -5,7 +5,7 @@ COPY OfficeChat .
 COPY requirements.dep requirements.dep
 RUN pip install -r requirements.dep
 
-WORKDIR /OfficeChat
+WORKDIR /apps/OfficeChat
 
 # Run your Python application
 CMD [ "python3", "run.py" ]
