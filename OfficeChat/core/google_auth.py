@@ -21,7 +21,14 @@ router = APIRouter()
 
 
 @router.get('/googleSignIn')
-async def google_sign_in(request:Request):
+async def google_sign_in(
+    request:Request
+    ):
+    user_id = request.session.get('id')
+    authtype = request.session.get('auth')
+    if authtype and authtype=='google' and user_id :
+        return RedirectResponse('/',status_code=302)
+    
     redirect_uri = request.url_for('authg')  # This creates the url for the /auth endpoint
     return await oauth.google.authorize_redirect(request, redirect_uri)
 
@@ -30,10 +37,11 @@ async def authg(
     request:Request,
     dbsession = Depends(get_db_Session),
     ):
+
     try:
         access_token = await oauth.google.authorize_access_token(request)
-
     except OAuthError:
+
         return RedirectResponse(url='/login')
 
     user_info = access_token['userinfo']
