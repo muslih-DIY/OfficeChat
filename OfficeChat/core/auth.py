@@ -63,6 +63,7 @@ async def get_user_from_session_cookie(
         session = Depends(get_db_Session),
         cookies: str | None = Cookie(default=None,alias=COOKIE_NAME)
         )->UserProfile:
+    user_id = request.session.get('id')
     if cookies:
         try:
             user_id = decode_token(cookies)
