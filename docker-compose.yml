@@ -3,4 +3,9 @@ services:
   web:
     build: ./  
     ports:
-      - "80:80"  
+      - "80:80"
+    volume:
+      - ./OfficeChat/.:/apps/  
+    environment:
+      - http_proxy:${http_proxy}
+      - https_proxy:${http_proxy}
