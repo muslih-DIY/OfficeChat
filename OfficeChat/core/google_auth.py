@@ -30,7 +30,7 @@ async def google_sign_in(
         return RedirectResponse('/',status_code=302)
     
     redirect_uri = request.url_for('authg')  # This creates the url for the /auth endpoint
-    return await oauth.google.authorize_redirect(request, redirect_uri)
+    return await oauth.google.authorize_redirect(request, redirect_uri,login_hint='',prompt='login')
 
 @router.get('/authg')
 async def authg(

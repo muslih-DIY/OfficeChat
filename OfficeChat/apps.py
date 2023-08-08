@@ -23,7 +23,7 @@ app = FastAPI()
 #     allow_headers=["*"],
 # )
 app.mount("/static", StaticFiles(directory=config.ROOT / "static"), name="static")
-app.add_middleware(SessionMiddleware, secret_key="some-random-string",session_cookie='authSession',max_age=20*60)
+app.add_middleware(SessionMiddleware, secret_key="some-random-string",session_cookie='authSession',max_age=36*60*60)
 
 routes = (
     index.router,
